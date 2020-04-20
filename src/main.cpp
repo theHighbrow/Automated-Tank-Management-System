@@ -2,17 +2,23 @@
 #include<ESP8266WiFi.h>
 #include<PubSubClient.h>
 
-const char* ssid = "Dlink";
+const char* ssid = "DLink";
 const char* password = "DLINK100612";
-const char* mqttuser = ;
-const char* mqttpassword = ;
-const char* mqttserver = ;
+const char* mqttuser = "ckbdtizs" ;
+const char* mqttpassword = "hASIpo8xbF36";
+const char* mqttserver = "soldier.cloudmqtt.com";
 const char* device_id = "esp8266";
+
+const int trigP = 2;  //D4 Or GPIO-2 of nodemcu
+const int echoP = 0;  //D3 Or GPIO-0 of nodemcu
+const int motorPin = 4; //D2 
+long duration;
+int distance;
 
 WiFiClient espClient; 
 PubSubClient client(espClient);
 
-const byte ledPin1 = ;
+//const byte ledPin1  ;
 
 char msg_buff[100];
 
@@ -27,14 +33,14 @@ void setup_wifi()
  {
    delay(500);
    Serial.println("Connecting...");
-   pinMode(BUILTIN_LED,HIGH);
+   pinMode(LED_BUILTIN,HIGH);
  }
    randomSeed(micros());
    pinMode(LED_BUILTIN,LOW);
    Serial.print("Connected to ");
    Serial.println(ssid);
    Serial.println("Wifi IP :-");
-   Serial.println(WiFi.localIP);
+   Serial.println(WiFi.localIP());
 }
 
 void reconnect()
@@ -75,7 +81,10 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   setup_wifi();
-  client.setServer(mqttserver,);
+  pinMode(trigP, OUTPUT);  // Sets the trigPin as an Output
+  pinMode(echoP, INPUT);
+  pinMode(motorPin,OUTPUT);   // Sets the echoPin as an Input
+  client.setServer(mqttserver,17702);
   client.setCallback(callback);
   reconnect();
 }
@@ -87,9 +96,22 @@ void loop() {
     reconnect();
   }
   client.loop();
-  //.
- // .
- // .
-
-  client.publish("distance",)
+  digitalWrite(trigP, LOW);   // Makes trigPin low
+  delayMicroseconds(2);       // 2 micro second delay 
+  digitalWrite(trigP, HIGH);  // tigPin high
+  delayMicroseconds(10);      // trigPin high for 10 micro seconds
+  digitalWrite(trigP, LOW);   // trigPin low
+  duration = pulseIn(echoP, HIGH);   //Read echo pin, time in microseconds
+  Serial.println(duration); 
+  distance= duration*0.034/2;        //Calculating actual/real distance
+  Serial.print("Distance = ");        //Output distance on arduino serial monitor 
+  Serial.println(distance);
+  delay(3000);
+  char dist[16];   
+  itoa(distance,dist,10);
+  client.publish("distance",dist);
+  if (distance < 40)
+  {
+    digitalWrite(motorPin,LOW);
+  }
 }
