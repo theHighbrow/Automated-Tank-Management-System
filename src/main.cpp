@@ -73,8 +73,23 @@ void callback(char* topic, byte* payload, unsigned int length)
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(9600);
+  setup_wifi();
+  client.setServer(mqttserver,);
+  client.setCallback(callback);
+  reconnect();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  if (!client.connected())
+  {
+    reconnect();
+  }
+  client.loop();
+  //.
+ // .
+ // .
+
+  client.publish("distance",)
 }
