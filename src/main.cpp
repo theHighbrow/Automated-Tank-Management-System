@@ -2,6 +2,11 @@
 #include<ESP8266WiFi.h>
 #include<PubSubClient.h>
 
+const int trigP = 2;  //D4 Or GPIO-2 of nodemcu
+const int echoP = 0;  //D3 Or GPIO-0 of nodemcu
+long duration;
+int distance;
+
 const char* ssid = "Dlink";
 const char* password = "DLINK100612";
 const char* mqttuser = ;
