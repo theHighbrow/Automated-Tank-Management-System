@@ -2,8 +2,8 @@
 #include<ESP8266WiFi.h>
 #include<PubSubClient.h>
 
-const char* ssid = "DLink";
-const char* password = "DLINK100612";
+const char* ssid = "IEEEUSICT";
+const char* password = "12345678";
 const char* mqttuser = "ckbdtizs" ;
 const char* mqttpassword = "hASIpo8xbF36";
 const char* mqttserver = "soldier.cloudmqtt.com";
@@ -14,6 +14,10 @@ const int echoP = 0;  //D3 Or GPIO-0 of nodemcu
 const int motorPin = 4; //D2 
 long duration;
 int distance;
+
+int sensorPin = A0;
+int enable2 = 13;
+int sensorValue2 = 0;
 
 WiFiClient espClient; 
 PubSubClient client(espClient);
@@ -84,6 +88,7 @@ void setup() {
   pinMode(trigP, OUTPUT);  // Sets the trigPin as an Output
   pinMode(echoP, INPUT);
   pinMode(motorPin,OUTPUT);   // Sets the echoPin as an Input
+  pinMode(enable2, OUTPUT);
   client.setServer(mqttserver,17702);
   client.setCallback(callback);
   reconnect();
@@ -102,7 +107,7 @@ void loop() {
   delayMicroseconds(10);      // trigPin high for 10 micro seconds
   digitalWrite(trigP, LOW);   // trigPin low
   duration = pulseIn(echoP, HIGH);   //Read echo pin, time in microseconds
-  Serial.println(duration); 
+  //Serial.println(duration); 
   distance= duration*0.034/2;        //Calculating actual/real distance
   Serial.print("Distance = ");        //Output distance on arduino serial monitor 
   Serial.println(distance);
@@ -114,4 +119,22 @@ void loop() {
   {
     digitalWrite(motorPin,LOW);
   }
+  //-------------------WATER SENSOR--------------
+  delay(500);
+  sensorValue2 = analogRead(sensorPin);
+  sensorValue2 = constrain(sensorValue2, 150, 440);
+  sensorValue2 = map(sensorValue2, 150, 440, 1023, 0);
+  if(sensorValue2 > 20)
+  {
+    Serial.println("water detected");
+    digitalWrite(enable2,HIGH);
+  }else
+  {
+    Serial.println("No water");
+    digitalWrite(enable2,LOW);
+    Serial.print("water value: ");
+    Serial.println(sensorValue2);
+    delay(100);
+  }
+  
 }
