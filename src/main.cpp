@@ -9,20 +9,20 @@ const char* mqttpassword = "hASIpo8xbF36";
 const char* mqttserver = "soldier.cloudmqtt.com";
 const char* device_id = "esp8266";
 
+//PINS :-
 const int trigP = 2;  //D4 Or GPIO-2 of nodemcu
-const int echoP = 0;  //D3 Or GPIO-0 of nodemcu
-const int motorPin = 4; //D2 
+const int echoP = 4;  //D2 Or GPIO-0 of nodemcu
+const int motorPin = 5; //D1 
+int sensorPin = A0; //A0 analog water detector
+int sensorValue2 = 0;
+int sensorValue3 = 13; //D7 Digital water detector
+
 long duration;
 int distance;
 
-int sensorPin = A0;
-int enable2 = 13;
-int sensorValue2 = 0;
-
 WiFiClient espClient; 
 PubSubClient client(espClient);
-//heloooooooooooooooooo
-//const byte ledPin1  ;
+
 
 char msg_buff[100];
 
@@ -86,9 +86,9 @@ void setup() {
   Serial.begin(9600);
   setup_wifi();
   pinMode(trigP, OUTPUT);  // Sets the trigPin as an Output
-  pinMode(echoP, INPUT);
-  pinMode(motorPin,OUTPUT);   // Sets the echoPin as an Input
-  pinMode(enable2, OUTPUT);
+  pinMode(echoP, INPUT);    // Sets the echoPin as an Input
+  pinMode(motorPin,OUTPUT);   
+  pinMode(sensorValue3,INPUT);
   client.setServer(mqttserver,17702);
   client.setCallback(callback);
   reconnect();
@@ -117,24 +117,48 @@ void loop() {
   client.publish("distance",dist);
   if (distance < 40)
   {
-    digitalWrite(motorPin,LOW);
+    digitalWrite(motorPin,HIGH);
   }
-  //-------------------WATER SENSOR--------------
-  delay(500);
-  sensorValue2 = analogRead(sensorPin);
-  sensorValue2 = constrain(sensorValue2, 150, 440);
-  sensorValue2 = map(sensorValue2, 150, 440, 1023, 0);
-  if(sensorValue2 > 20)
+  else 
   {
-    Serial.println("water detected");
-    digitalWrite(enable2,HIGH);
-  }else
-  {
-    Serial.println("No water");
-    digitalWrite(enable2,LOW);
-    Serial.print("water value: ");
-    Serial.println(sensorValue2);
-    delay(100);
+    digitalWrite(motorPin,LOW); 
   }
   
+  //-------------------WATER SENSOR using analog pin--------------
+  delay(500);
+  char  waterflowlevel[16];
+  sensorValue2 = analogRead(sensorPin);
+  //Serial.print("Sensor value :");
+  //Serial.println(sensorValue2);
+  sensorValue2 = map(sensorValue2, 0, 1023,  0, 255);
+  //Serial.print("mapped sensor value: ");
+  //Serial.println(sensorValue2);
+  if(sensorValue2 > 50 && sensorValue2 < 140)
+  {
+    Serial.println("water detected LOW on ANALOG reader");
+   strcpy(waterflowlevel,"LOW water flow detected");
+  }else if(sensorValue2 > 140)
+  {
+    Serial.println("water detected HIGH on ANALOG reader ");
+    strcpy(waterflowlevel,"HIGH water flow detected");
+  }
+  else 
+  {
+    Serial.println("No water");
+    strcpy(waterflowlevel,"No water flow detected");
+    delay(100);
+  }
+  client.publish("waterflowlevelANALOG",waterflowlevel);
+  //--------------------WATER SENSOR with digital pin--------------------
+  char wfldig[16];
+  if(digitalRead(sensorValue3)==HIGH)
+  {
+    Serial.println("Water detected on digital reader");
+    strcpy(wfldig,"Water flow detected ");
+  }else
+  {
+    Serial.println("No water detected on digital reader");
+    strcpy(wfldig,"No water flow detected");
+  }
+  client.publish("waterflowlevelDIGITAL",wfldig);
 }
