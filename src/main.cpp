@@ -2,6 +2,7 @@
 #include<ESP8266WiFi.h>
 #include<PubSubClient.h>
 
+
 const char* ssid = "Your network ssid";
 const char* password = "network password";
 const char* mqttuser = "mqtt user id" ;
@@ -82,7 +83,9 @@ void callback(char* topic, byte* payload, unsigned int length)
 }
 
 void setup() {
-  // put your setup code here, to run once:
+  pinMode(trigP, OUTPUT);  // Sets the trigPin as an Output
+pinMode(echoP, INPUT);   // Sets the echoPin as an Input
+
   Serial.begin(9600);
   setup_wifi();
   pinMode(trigP, OUTPUT);  // Sets the trigPin as an Output
@@ -95,12 +98,22 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+digitalWrite(trigP, LOW);   // Makes trigPin low
+delayMicroseconds(2);       // 2 micro second delay 
+digitalWrite(trigP, HIGH);  // tigPin high
+delayMicroseconds(10);      // trigPin high for 10 micro seconds
+digitalWrite(trigP, LOW);   // trigPin low
+duration = pulseIn(echoP, HIGH);   //Read echo pin, time in microseconds
+distance= duration*0.034/2;        //Calculating actual/real distance
+Serial.print("Distance = ");        //Output distance on arduino serial monitor 
+Serial.println(distance);
+delay(3000);   
   if (!client.connected())
   {
     reconnect();
   }
   client.loop();
+
   digitalWrite(trigP, LOW);   // Makes trigPin low
   delayMicroseconds(2);       // 2 micro second delay 
   digitalWrite(trigP, HIGH);  // tigPin high
