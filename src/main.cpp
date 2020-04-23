@@ -2,10 +2,10 @@
 #include<ESP8266WiFi.h>
 #include<PubSubClient.h>
 
-const char* ssid = "IEEEUSICT";
-const char* password = "12345678";
-const char* mqttuser = "ckbdtizs" ;
-const char* mqttpassword = "hASIpo8xbF36";
+const char* ssid = "Your network ssid";
+const char* password = "network password";
+const char* mqttuser = "mqtt user id" ;
+const char* mqttpassword = "mqttpassword";
 const char* mqttserver = "soldier.cloudmqtt.com";
 const char* device_id = "esp8266";
 
@@ -14,9 +14,9 @@ const int trigP = 2;  //D4 Or GPIO-2 of nodemcu
 const int echoP = 4;  //D2 Or GPIO-0 of nodemcu
 const int motorPin = 5; //D1 
 int sensorPin = A0; //A0 analog water detector
-int sensorValue2 = 0;
-int sensorValue3 = 13; //D7 Digital water detector
+int sensorValue3 = 15 ;  //D8 Digital water detector
 
+int sensorValue2 = 0;
 long duration;
 int distance;
 
@@ -155,7 +155,7 @@ void loop() {
   {
     Serial.println("Water detected on digital reader");
     strcpy(wfldig,"Water flow detected ");
-  }else
+  }else if(digitalRead(sensorValue3)==LOW)
   {
     Serial.println("No water detected on digital reader");
     strcpy(wfldig,"No water flow detected");
